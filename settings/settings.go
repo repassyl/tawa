@@ -1,6 +1,9 @@
-package main
+package settings
 
 import (
+	"strconv"
+	"time"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
@@ -8,10 +11,22 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+const (
+	MinutesMorning = "Morning meditation"
+	MinutesShort = "Short meditations"
+	NumberOfShort = "Number of short meditations"
+	MinutesEvening = "Evening meditation"
+)
+
+var a fyne.App
+
+func init() {
+	a = app.NewWithID("repassyl.tawa.preferences")
+}
+
 func settingsSelector(values []string, title string, init string, suffix string) *fyne.Container {
-	a := app.NewWithID("repassyl.tawa.preferences")
 	selector := widget.NewSelect(values, func(selected string) {
-		a.Preferences().SetString(title, selected)
+		a.Preferences().SetString(title + ":", selected)
 	})
 	selector.SetSelected(a.Preferences().StringWithFallback(title, init))
 	return container.New(layout.NewHBoxLayout(), widget.NewLabel(title), layout.NewSpacer(), selector, widget.NewLabel(suffix))
@@ -27,11 +42,20 @@ func settingsNumber(title string, init string) *fyne.Container {
 	return settingsSelector(values, title, init, " times")
 }
 
-func settingsScreen() *fyne.Container {
+func Screen() *fyne.Container {
 	return container.New(layout.NewVBoxLayout(),
-		settingsMinutes("Morning meditation:", "25"),
-		settingsMinutes("Short meditations:", "5"),
-		settingsNumber("Number of short meditations:", "8"),
-		settingsMinutes("Evening meditation:", "10"),
+		settingsMinutes(MinutesMorning, "25"),
+		settingsMinutes(MinutesShort, "5"),
+		settingsNumber(NumberOfShort, "8"),
+		settingsMinutes(MinutesEvening, "10"),
 	)
+}
+
+func Get(label string) string {
+	return a.Preferences().StringWithFallback(label, "5")
+}
+
+func GetMinutes(label string) time.Duration {
+	i, _ := strconv.Atoi(label)
+	return time.Duration(i) * time.Minute
 }
